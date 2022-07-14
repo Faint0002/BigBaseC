@@ -54,13 +54,9 @@ int scrThreadRunHk(uint32_t ops_to_execute) {
 			//We need to not do this in story mode, it breaks the hospital teleport and creates a indefinite suicide scneen
 			GRAPHICS_DISABLE_SCREENBLUR_FADE();
 			if (CAM_IS_SCREEN_FADED_OUT())
-				CAM_DO_SCREEN_FADE_IN(0);
+				CAM_DO_SCREEN_FADE_OUT(0);
 			else if (CAM_IS_SCREEN_FADED_IN())
 				CAM_DO_SCREEN_FADE_IN(0);
-		}
-		if (*(int*)getScriptGlobalPtr(1574988) == 26) {
-			STREAMING_STOP_PLAYER_SWITCH();
-			*(int*)getScriptGlobalPtr(1574988) = 29;
 		}
 	}
 	return ogScrThreadRun(ops_to_execute);
@@ -77,15 +73,12 @@ const char* getLabelTextHk(void* unk, const char* lbl) {
 
 bool scriptedGameEvent(struct CScriptedGameEvent* sge, struct CNetGamePlayer* sender) {
 	int64_t* args = sge->m_args;
-	uint32_t argsSize = sge->m_args_size;
-	for (int i = 0; i < argsSize; i++)
-		sendLog(consoleWhiteOnBlack, "Events", "Arg[%i]: %i", i, args[i]);
-	/*for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 8; i++) {
 		if (args[0] == g_scriptEvents[i].evnt && g_scriptEvents[i].toggle) {
 			sendLog(consoleWhiteOnBlack, "Event Protections", "%s Event from %s", g_scriptEvents[i].name, sender->m_player_info->m_net_player_data.m_name);
 			return true;
 		}
-	}*/
+	}
 	return false;
 }
 void (*ogReceivedEvent)(uint64_t eventMgr, struct CNetGamePlayer* source, struct CNetGamePlayer* target, uint16_t id, int idx, int handledBitset, int bufferSize, struct datBitBuffer* buffer);
