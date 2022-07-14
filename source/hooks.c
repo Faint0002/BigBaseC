@@ -87,7 +87,7 @@ bool scriptedGameEvent(CScriptedGameEvent* sge, CNetGamePlayer* sender) {
 }
 void (*ogReceivedEvent)(uint64_t eventMgr, struct CNetGamePlayer* source, struct CNetGamePlayer* target, uint16_t id, int idx, int handledBitset, int bufferSize, struct datBitBuffer* buffer);
 void receivedEventHk(uint64_t eventMgr, struct CNetGamePlayer* source, struct CNetGamePlayer* target, uint16_t id, int idx, int handledBitset, int bufferSize, struct datBitBuffer* buffer) {
-	char const* eventName = *(char**)(eventMgr + 8ui64 * id + 0x3B6B0);
+	char const* eventName = *(char**)(eventMgr + 8ULL * id + 0x3B6B0);
 	if (eventName == NULL || source == NULL || source->m_player_id < 0 || source->m_player_id >= 32 || !NETWORK_NETWORK_IS_SESSION_ACTIVE()) {
 		g_pointers.m_sendEventAck(eventMgr, source, target, id, handledBitset);
 		return;

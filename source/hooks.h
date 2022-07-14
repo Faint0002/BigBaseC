@@ -1,5 +1,6 @@
 #pragma once
 #include "classes.h"
+#include "enums.h"
 #include "pointers.h"
 typedef struct lbls {
 	char const* label;
