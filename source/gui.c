@@ -149,7 +149,7 @@ void drawSubtitle(char const* title) {
 bool drawOption(char const* option, char const* description) {
 	g_optionCount++;
 	bool onThis = g_currentOption == g_optionCount ? true : false;
-	float opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
+	int opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
 	GRAPHICS_SET_SCRIPT_GFX_DRAW_ORDER(7);
 	drawRect(g_optionColor, Vector2(g_posX, g_posY + 0.1f + (0.041f + 0.00122f) + (0.035f * opCountChecks)), Vector2(g_width, 0.035f));
 	GRAPHICS_SET_SCRIPT_GFX_DRAW_ORDER(8);
@@ -169,7 +169,7 @@ bool drawOption(char const* option, char const* description) {
 bool drawSub(char const* option, char const* description, void(*sub)()) {
 	drawOption(option, description);
 	bool onThis = g_currentOption == g_optionCount ? true : false;
-	float opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
+	int opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
 	drawText(">", onThis ? g_submenuarrowSelectedColor : g_submenuarrowColor, Vector2(g_posX + (g_width - 0.113f) - getTextWidth(">", -1, 0.f), g_posY + 0.1f + 0.04f - 0.015f + (0.035f * opCountChecks)), Vector2(0.5f, 0.5f), 4);
 	if (g_currentOption == g_optionCount)
 		if (g_selectPressed) {
@@ -181,7 +181,7 @@ bool drawSub(char const* option, char const* description, void(*sub)()) {
 bool drawToggle(char const* option, char const* description, bool* toggle) {
 	drawOption(option, description);
 	bool onThis = g_currentOption == g_optionCount ? true : false;
-	float opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
+	int opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
 	char const* text = *toggle ? "~g~ON" : "~r~OFF";
 	drawText(text, g_optionText, Vector2(g_posX + (g_width - 0.112f) - getTextWidth(text, -1, 0.f), g_posY + 0.1f + 0.04f - 0.0115f + (0.035f * opCountChecks)), Vector2(0.35f, 0.35f), 0);
 	if (g_currentOption == g_optionCount)
@@ -196,7 +196,7 @@ bool drawInt(char const* option, char const* description, int* inttochange, int 
 	if (*inttochange < min)
 		*inttochange = max;
 	bool onThis = g_currentOption == g_optionCount ? true : false;
-	float opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
+	int opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
 	char const* text = toString(*inttochange);
 	drawText(text, onThis ? g_selectedOptionText : g_optionText, Vector2(g_posX + (g_width - 0.112f) - getTextWidth(text, -1, 0.f), g_posY + 0.1f + 0.04f - 0.0115f + (0.035f * opCountChecks)), Vector2(0.35f, 0.35f), 0);
 	if (g_currentOption == g_optionCount) {
@@ -220,7 +220,7 @@ bool drawFloat(char const* option, char const* description, float* floattochange
 	if (*floattochange < min)
 		*floattochange = max;
 	bool onThis = g_currentOption == g_optionCount ? true : false;
-	float opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
+	int opCountChecks = g_currentOption > g_maxVisOptions ? g_maxVisOptions : g_optionCount;
 	char const* text = toStringFloat(*floattochange);
 	drawText(text, onThis ? g_selectedOptionText : g_optionText, Vector2(g_posX + (g_width - 0.112f) - getTextWidth(text, -1, 0.f), g_posY + 0.1f + 0.04f - 0.0115f + (0.035f * opCountChecks)), Vector2(0.35f, 0.35f), 0);
 	if (g_currentOption == g_optionCount) {
@@ -278,14 +278,14 @@ void inputHandler() {
 	g_leftPressed = false;
 	g_rightPressed = false;
 	if (GetTickCount() - g_previousTick > m_delay) {
-		if (GetAsyncKeyState(VK_INSERT) /*|| CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 21) && CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 20)*/) {
+		if (GetAsyncKeyState(VK_INSERT) || CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 21) && CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 20)) {
 			if (g_menuLevel == 0)
 				forwardMenu(mainmenu, "Home");
 			playFrontendSound(g_opened ? "SELECT" : "BACK");
 			g_opened = !g_opened;
 			g_previousTick = GetTickCount64();
 		}
-		else if (GetAsyncKeyState(VK_BACK) /* CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 194)*/) {
+		else if (CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 194)) {
 			if (g_opened && g_menuLevel != 0) {
 				playFrontendSound("BACK");
 				if (g_menuLevel == 1)
@@ -295,7 +295,7 @@ void inputHandler() {
 			}
 			g_previousTick = GetTickCount64();
 		}
-		else if (GetAsyncKeyState(VK_UP) /*CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 172)*/) {
+		else if (CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 172)) {
 			if (g_opened && g_menuLevel != 0) {
 				playFrontendSound("NAV_UP_DOWN");
 				if (g_currentOption > 1)
@@ -305,7 +305,7 @@ void inputHandler() {
 			}
 			g_previousTick = GetTickCount64();
 		}
-		else if (GetAsyncKeyState(VK_DOWN) /*CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 173)*/) {
+		else if (CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 173)) {
 			if (g_opened && g_menuLevel != 0) {
 				playFrontendSound("NAV_UP_DOWN");
 				if (g_currentOption < g_optionCount)
@@ -315,23 +315,23 @@ void inputHandler() {
 			}
 			g_previousTick = GetTickCount64();
 		}
-		else if (GetAsyncKeyState(VK_LEFT) /*CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 174)*/) {
+		else if (CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 174)) {
 			if (g_opened && g_menuLevel != 0) {
-				//playFrontendSound("NAV_LEFT_RIGHT"); // i have no idea why MinGW linker can't find it here
+				playFrontendSound("NAV_LEFT_RIGHT");
 				g_leftPressed = true;
 			}
 			g_previousTick = GetTickCount64();
 		}
-		else if (GetAsyncKeyState(VK_RIGHT) /*CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 175)*/) {
+		else if (CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 175)) {
 			if (g_opened && g_menuLevel != 0) {
-				//playFrontendSound("NAV_LEFT_RIGHT"); // i have no idea why MinGW linker can't find it here
+				playFrontendSound("NAV_LEFT_RIGHT");
 				g_rightPressed = true;
 			}
 			g_previousTick = GetTickCount64();
 		}
-		else if (GetAsyncKeyState(VK_RETURN) /*CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 191)*/) {
+		else if (CONTROLS_IS_DISABLED_CONTROL_PRESSED(2, 191)) {
 			if (g_opened && g_menuLevel != 0) {
-				//playFrontendSound("SELECT"); // i have no idea why MinGW linker can't find it here
+				playFrontendSound("SELECT");
 				g_selectPressed = true;
 			}
 			g_previousTick = GetTickCount64();

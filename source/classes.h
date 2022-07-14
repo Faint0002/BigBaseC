@@ -7,7 +7,7 @@ typedef struct r_vector4 { float x; float y; float z; float w; } r_vector4;
 
 typedef struct GtaThread GtaThread;
 typedef struct GtaThreadVtbl {
-	void* (*__vecDelDtor)(GtaThread* this, unsigned int);
+	void* (*__vecDelDtor)(unsigned int);
 	int(*Reset)(uint32_t scriptHash, void* args, uint32_t arg_count);
 	int(*Run)();
 	int(*Tick)(uint32_t ops_to_execute);
@@ -176,11 +176,11 @@ typedef struct netPlayerData {
 	uint16_t m_internal_port; //0x0058
 	char pad_005A[6]; //0x005A
 	uint64_t m_host_token; //0x0060
-	uint64_t m_peer_id; //0x0068
+	uint64_t m_platform_data; //0x0068
 	int64_t m_rockstar_id2; //0x0070
 	char pad_0078[12]; //0x0078
 	char m_name[20]; //0x0084
-} netPlayerData; //Size: 0x0098
+} rlGamerInfo; //Size: 0x0098
 
 #pragma pack(push, 1)
 typedef struct CPlayerInfo {
@@ -221,35 +221,34 @@ typedef struct CPlayerInfo {
 } CPlayerInfo; //Size: 0x0D30
 #pragma pack(pop)
 
-
 typedef struct nonPhysicalPlayerDataBase nonPhysicalPlayerDataBase;
 typedef struct netPlayer netPlayer;
 typedef struct CNetGamePlayer CNetGamePlayer;
 typedef struct netPlayerMgrBase netPlayerMgrBase;
-struct nonPhysicalPlayerDataBase {
-	void*(*__vecDelDtor)(nonPhysicalPlayerDataBase* this, unsigned int);
+typedef struct nonPhysicalPlayerDataBase {
+	void*(*__vecDelDtor)(unsigned int);
 	void(*_0x08)();
 	void(*_0x10)();
 	void(*_0x18)();
 	void(*log)();
-}; //Size: 0x0008
+} nonPhysicalPlayerDataBase; //Size: 0x0008
 typedef struct CNonPhysicalPlayerData {
 	struct nonPhysicalPlayerDataBase* m_nonPhysicalPlayerDataBase; //0x0000
 	int32_t m_bubble_id; //0x0008
 	int32_t m_player_id; //0x000C
 	struct r_vector3 m_position; //0x0010
 } CNonPhysicalPlayerData; //Size: 0x001C
-struct netPlayer {
-	void*(*__vecDelDtor)(netPlayer* this, unsigned int);
+typedef struct netPlayer {
+	void*(*__vecDelDtor)(unsigned int);
 	void(*reset)();
 	bool(*is_valid)();
 	const char*(*get_name)();
 	void(*_0x20)();
 	bool(*is_host)();
-	netPlayerData*(*get_net_data)();
+	struct netPlayerData*(*get_net_data)();
 	void(*_0x38)();
-}; //Size: 0x0008
-struct CNetGamePlayer {
+} netPlayer; //Size: 0x0008
+typedef struct CNetGamePlayer {
 	struct netPlayer* m_netPlayer; //0x0000
 	char pad_0008[8]; //0x0008
 	struct CNonPhysicalPlayerData* m_non_physical_player; //0x0010
@@ -257,15 +256,12 @@ struct CNetGamePlayer {
 	char pad_001C[4]; //0x001C
 	uint8_t m_active_id; //0x0020
 	uint8_t m_player_id; //0x0021
-	char pad_0022[3]; //0x0022
+	char pad_0022[124]; //0x0022
 	uint16_t m_complaints; //0x0025
-	char pad_0027[17]; //0x0027
-	struct CNetGamePlayer* m_unk_net_player_list[10]; //0x0038
-	char pad_0088[24]; //0x0088
 	struct CPlayerInfo* m_player_info; //0x00A0
-}; //Size: 0x00A8
+} CNetGamePlayer; //Size: 0x00A8
 
-struct netPlayerMgrBase {
+typedef struct netPlayerMgrBase {
 	void*(*__vecDelDtor)(netPlayerMgrBase* this, unsigned int);
 	void(*Initialize)();
 	void(*Shutdown)();
@@ -274,7 +270,7 @@ struct netPlayerMgrBase {
 	void(*RemovePlayer)(CNetGamePlayer* net_game_player);
 	void(*UpdatePlayerListsForPlayer)(CNetGamePlayer* net_game_player);
 	CNetGamePlayer*(*AddPlayer)(void* a1, void* a2, void* a3, struct netPlayerData* net_player_data, struct CNonPhysicalPlayerData* non_physical_player_data);
-}; //Size: 0x0008
+}netPlayerMgrBase; //Size: 0x0008
 typedef struct CNetworkPlayerMgr {
 	struct netPlayerMgrBase* m_netPlayerMgrBase; //0x0000
 	char pad_0008[224]; //0x0008

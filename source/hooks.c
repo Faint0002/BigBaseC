@@ -75,34 +75,39 @@ const char* getLabelTextHk(void* unk, const char* lbl) {
 	return ogGetLabelText(unk, lbl);
 }
 
-bool scriptedGameEvent(CScriptedGameEvent* sge, CNetGamePlayer* sender) {
+bool scriptedGameEvent(struct CScriptedGameEvent* sge, struct CNetGamePlayer* sender) {
 	int64_t* args = sge->m_args;
-	for (int i = 0; i < 8; i++) {
+	uint32_t argsSize = sge->m_args_size;
+	for (int i = 0; i < argsSize; i++)
+		sendLog(consoleWhiteOnBlack, "Events", "Arg[%i]: %i", i, args[i]);
+	/*for (int i = 0; i < 8; i++) {
 		if (args[0] == g_scriptEvents[i].evnt && g_scriptEvents[i].toggle) {
 			sendLog(consoleWhiteOnBlack, "Event Protections", "%s Event from %s", g_scriptEvents[i].name, sender->m_player_info->m_net_player_data.m_name);
 			return true;
 		}
-	}
+	}*/
 	return false;
 }
 void (*ogReceivedEvent)(uint64_t eventMgr, struct CNetGamePlayer* source, struct CNetGamePlayer* target, uint16_t id, int idx, int handledBitset, int bufferSize, struct datBitBuffer* buffer);
 void receivedEventHk(uint64_t eventMgr, struct CNetGamePlayer* source, struct CNetGamePlayer* target, uint16_t id, int idx, int handledBitset, int bufferSize, struct datBitBuffer* buffer) {
-	char const* eventName = *(char**)(eventMgr + 8ui64 * id + 0x3B6B0);
+	char const* eventName = *(char const**)(eventMgr + 8ui64 * id + 0x3B6B0);
 	if (eventName == NULL || source == NULL || source->m_player_id < 0 || source->m_player_id >= 32 || !NETWORK_NETWORK_IS_SESSION_ACTIVE()) {
 		g_pointers.m_sendEventAck(eventMgr, source, target, id, handledBitset);
 		return;
 	}
 	switch (id) {
 	case _CScriptedGameEvent: {
+		//I'll leave this for someone who can actually be asked to properly do this, but for now? Fuck this code.
 		struct CScriptedGameEvent* sge = malloc(sizeof(struct CScriptedGameEvent));
-		buffer_ReadDword(buffer , &sge->m_args_size, 0x20);
+		buffer_ReadDword(buffer, &sge->m_args_size, 0x20);
 		if (sge->m_args_size - 1 <= 0x1AF)
-			buffer_ReadArray(buffer , &sge->m_args, 8 * sge->m_args_size);
-		if (scriptedGameEvent(sge, source)) {
+			buffer_ReadArray(buffer, &sge->m_args, 8 * sge->m_args_size);
+		bool res = scriptedGameEvent(sge, source);
+		free((void*)sge);
+		if (res) {
 			g_pointers.m_sendEventAck(eventMgr, source, target, id, handledBitset);
 			return;
 		}
-		free((void*)sge);
 		buffer_Seek(buffer, 0);
 	} break;
 	}

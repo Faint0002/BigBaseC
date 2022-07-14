@@ -26,23 +26,19 @@ void selectedplayermenu() {
 }
 void playersmenu() {
 	CNetworkPlayerMgr* npm = *g_pointers.m_networkPlayerMgr;
-	if (npm != 0) {
-		if (npm->m_player_count != 0) {
-			for (int i = 0; i < npm->m_player_count; i++) {
-				if (npm->m_player_list[i]) {
-					if (npm->m_player_list[i]->m_netPlayer && npm->m_player_list[i]->m_netPlayer->is_valid()) {
-						if (drawSub(PLAYER_GET_PLAYER_NAME(npm->m_player_list[i]->m_player_id), "", selectedplayermenu)) {
-							g_selectedPlayer = i;
-						}
-					}
+	if (npm != 0 && npm->m_player_count != 0) {
+		for (int i = 0; i < npm->m_player_count; i++) {
+			if (npm->m_player_list[i]) {
+				if (npm->m_player_list[i]->m_netPlayer && npm->m_player_list[i]->m_netPlayer->is_valid()) {
+					if (drawSub(npm->m_player_list[i]->m_player_info->m_net_player_data.m_name, "", selectedplayermenu))
+						g_selectedPlayer = i;
 				}
 			}
 		}
-		else {
-			if (drawSub(PLAYER_GET_PLAYER_NAME(0), "", selectedplayermenu)) {
-				g_selectedPlayer = 0;
-			}
-		}
+	}
+	else {
+		if (drawSub(PLAYER_GET_PLAYER_NAME(0), "", selectedplayermenu))
+			g_selectedPlayer = 0;
 	}
 }
 void settingsmenu() {
