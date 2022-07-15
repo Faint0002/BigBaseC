@@ -90,7 +90,6 @@ void receivedEventHk(uint64_t eventMgr, struct CNetGamePlayer* source, struct CN
 	}
 	switch (id) {
 	case _CScriptedGameEvent: {
-		//I'll leave this for someone who can actually be asked to properly do this, but for now? Fuck this code.
 		struct CScriptedGameEvent* sge = malloc(sizeof(struct CScriptedGameEvent));
 		buffer_ReadDword(buffer, &sge->m_args_size, 0x20);
 		if (sge->m_args_size - 1 <= 0x1AF)
