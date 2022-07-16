@@ -17,6 +17,7 @@ void scanPointers(void* baseAdr, size_t imgSize) {
 	g_pointers.m_readBitbufferArray = (readBitbufferArrayT)scan(baseAdr, imgSize, "RBA", "48 89 5C 24 ? 57 48 83 EC 30 41 8B F8 4C", 0);
 	g_pointers.m_sendEventAck = (sendEventAckT)scan(baseAdr, imgSize, "SEA", "48 89 6C 24 ? 48 89 74 24 ? 57 48 83 EC 20 80 7A", -5);
 	g_pointers.m_receivedEvent = (receivedEventT)scan(baseAdr, imgSize, "RE", "66 41 83 F9 ? 0F 83", 0);
+	g_pointers.m_receivedNetMessage = (receivedNetMessageT)scan(baseAdr, imgSize, "RNM", "48 8B C4 48 89 58 08 48 89 68 10 48 89 70 18 48 89 78 20 41 54 41 56 41 57 48 83 EC 20 4C 8B 71 50 33 ED", 0);
 	g_pointers.m_pedFactory = (CPedFactory**)rip(scan(baseAdr, imgSize, "PF", "48 8B 05 ? ? ? ? 48 8B 48 08 48 85 C9 74 52 8B 81", 3));
 	g_pointers.m_networkPlayerMgr = (CNetworkPlayerMgr**)rip(scan(baseAdr, imgSize, "NPM", "48 8B 0D ? ? ? ? 8A D3 48 8B 01 FF 50 ? 4C 8B 07 48 8B CF", 3));
 	g_pointers.m_scriptGlobals = (intptr_t**)rip(scan(baseAdr, imgSize, "SG", "48 8D 15 ? ? ? ? 4C 8B C0 E8 ? ? ? ? 48 85 FF 48 89 1D", 3));

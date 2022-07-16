@@ -9,6 +9,7 @@ typedef bool(*readBitbufferDwordT)(struct datBitBuffer* buffer, PVOID read, int 
 typedef bool(*readBitbufferArrayT)(struct datBitBuffer* buffer, PVOID read, int bits, int unk);
 typedef void(*sendEventAckT)(uint64_t eventMgr, struct CNetGamePlayer* source, struct CNetGamePlayer* target, int idx, int handledBitset);
 typedef void(*receivedEventT)(uint64_t eventMgr, struct CNetGamePlayer* source, struct CNetGamePlayer* target, uint16_t id, int idx, int handledBitset, int bufferSize, struct datBitBuffer* buffer);
+typedef bool(*receivedNetMessageT)(void* netConnectionMgr, void* unk, struct InFrame* frame);
 
 typedef struct pointers {
 	struct GtaThreadVtbl* m_gtaThreadVftable;
@@ -21,6 +22,7 @@ typedef struct pointers {
 	readBitbufferArrayT m_readBitbufferArray;
 	sendEventAckT m_sendEventAck;
 	receivedEventT m_receivedEvent;
+	receivedNetMessageT m_receivedNetMessage;
 	struct atArray* m_gtaThreads;
 	struct CPedFactory** m_pedFactory;
 	struct CNetworkPlayerMgr** m_networkPlayerMgr;

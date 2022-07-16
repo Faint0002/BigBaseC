@@ -176,7 +176,7 @@ typedef struct netPlayerData {
 	uint16_t m_internal_port; //0x0058
 	char pad_005A[6]; //0x005A
 	uint64_t m_host_token; //0x0060
-	uint64_t m_platform_data; //0x0068
+	uint64_t m_peer_id; //0x0068
 	int64_t m_rockstar_id2; //0x0070
 	char pad_0078[12]; //0x0078
 	char m_name[20]; //0x0084
@@ -438,3 +438,23 @@ inline bool buffer_ReadInt64(struct datBitBuffer* buffer, int64_t* integer, int 
 inline bool buffer_ReadArray(struct datBitBuffer* buffer, PVOID array, int size) {
 	return g_pointers.m_readBitbufferArray(buffer, array, size, 0);
 }
+
+typedef struct InFrame InFrame;
+typedef struct InFrameVtbl InFrameVtbl;
+struct InFrameVtbl {
+	void* (*__vecDelDtor)(unsigned int);
+	void(*destroy)();
+	uint32_t(*get_type)();
+	uint32_t(*_0x18)();
+};
+typedef struct InFrame {
+	InFrameVtbl* m_vtbl; //0x0000
+	char pad_0008[56]; //0x0008
+	uint32_t m_msg_id; //0x0040
+	char pad_0044[4]; //0x0044
+	InFrame* m_this; //0x0048
+	char pad_0050[40]; //0x0050
+	uint32_t m_length; //0x0078
+	char pad_007C[4]; //0x007C
+	void* m_data; //0x0080
+} InFrame;

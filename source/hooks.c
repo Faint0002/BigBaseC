@@ -74,7 +74,7 @@ const char* getLabelTextHk(void* unk, const char* lbl) {
 bool scriptedGameEvent(struct CScriptedGameEvent* sge, struct CNetGamePlayer* sender) {
 	int64_t* args = sge->m_args;
 	for (int i = 0; i < 8; i++) {
-		if (args[0] == g_scriptEvents[i].evnt && g_scriptEvents[i].toggle) {
+		if (args[0] == g_scriptEvents[i].evnt && *g_scriptEvents[i].toggle) {
 			sendLog(consoleWhiteOnBlack, "Event Protections", "%s Event from %s", g_scriptEvents[i].name, sender->m_player_info->m_net_player_data.m_name);
 			return true;
 		}
@@ -106,6 +106,99 @@ void receivedEventHk(uint64_t eventMgr, struct CNetGamePlayer* source, struct CN
 	return ogReceivedEvent(eventMgr, source, target, id, idx, handledBitset, bufferSize, buffer);
 }
 
+bool getMsgType(enum eNetMessage* msgType, datBitBuffer* buffer) {
+	auto pos = 0;
+	uint32_t magic, length, extended;
+	if ((buffer->m_flagBits & 2) != 0 || (buffer->m_flagBits & 1) == 0 ? (pos = buffer->m_curBit) : (pos = buffer->m_maxBit), buffer->m_bitsRead + 15 > pos || !buffer_ReadDword(buffer, &magic, 14) || magic != 0x3246 || !buffer_ReadDword(buffer, &extended, 1)) {
+		*msgType = CMsgInvalid;
+		return false;
+	}
+	length = extended ? 16 : 8;
+	uint32_t msgT;
+	if ((buffer->m_flagBits & 1) == 0 ? (pos = buffer->m_curBit) : (pos = buffer->m_maxBit), length + buffer->m_bitsRead <= pos && buffer_ReadDword(buffer, &msgT, length)) {
+		*msgType = msgT;
+		return true;
+	}
+	else
+		return false;
+}
+CNetGamePlayer* getPlayerFromHostToken(uint64_t val) {
+	CNetworkPlayerMgr* npm = *g_pointers.m_networkPlayerMgr;
+	if (npm != 0 && npm->m_player_count != 0) {
+		for (int i = 0; i < npm->m_player_count; i++) {
+			if (npm->m_player_list[i]) {
+				if (npm->m_player_list[i]->m_netPlayer && npm->m_player_list[i]->m_netPlayer->is_valid()) {
+					if (npm->m_player_list[i]->m_player_info->m_net_player_data.m_host_token == val)
+						return npm->m_player_list[i];
+				}
+			}
+		}
+	}
+	return NULL;
+}
+CNetGamePlayer* getPlayerFromMsgID(uint32_t val) {
+	CNetworkPlayerMgr* npm = *g_pointers.m_networkPlayerMgr;
+	if (npm != 0 && npm->m_player_count != 0) {
+		for (int i = 0; i < npm->m_player_count; i++) {
+			if (npm->m_player_list[i]) {
+				if (npm->m_player_list[i]->m_netPlayer && npm->m_player_list[i]->m_netPlayer->is_valid()) {
+					if (npm->m_player_list[i]->m_msg_id == val)
+						return npm->m_player_list[i];
+				}
+			}
+		}
+	}
+	return NULL;
+}
+bool(*ogReceivedNetMessage)(void* netConnectionMgr, void* unk, InFrame* frame);
+bool receivedNetMessageHk(void* netConnectionMgr, void* unk, InFrame* frame) {
+	if (frame->m_vtbl->get_type() == 4) {
+		struct datBitBuffer* buffer = malloc(sizeof(struct datBitBuffer));
+		init_datBitBuffer(buffer, (uint8_t*)frame->m_data, frame->m_length);
+		enum eNetMessage msgType;
+		buffer->m_flagBits = 1;
+		CNetGamePlayer* sender = getPlayerFromMsgID(frame->m_msg_id);
+		if (sender && getMsgType(&msgType, buffer)) {
+			switch (msgType) {
+			case CMsgNetComplaint: {
+				uint64_t hostToken = NULL;
+				buffer_ReadQWord(buffer, &hostToken, 0x40);
+				uint32_t numberOfHostTokens = NULL;
+				buffer_ReadDword(buffer, &numberOfHostTokens, 0x20);
+				if (numberOfHostTokens <= 64) {
+					//We only need the first element, so we only need to grab one
+					uint64_t arrayElement = NULL;
+					buffer_ReadQWord(buffer, &arrayElement, 0x40);
+					if (arrayElement != NULL)
+						getPlayerFromHostToken(arrayElement)->m_complaints = USHRT_MAX;
+				}
+				buffer_Seek(buffer, 0);
+				sendLog(consoleWhiteOnBlack, "Event Protections", "Desync Kick from %s", getPlayerFromHostToken(hostToken)->m_player_info->m_net_player_data.m_name);
+				free((void*)buffer);
+				return false;
+			} break;
+			case CMsgTextMessage: {
+				char const* ss; //I really don't feel like creating another signature for strings, so we can just do this instead :)
+				int const textLen = buffer_ReadBits(buffer, buffer_ReadBits(buffer, 1) ? 15 : 7);
+				for (int i = 0; i < textLen; i++)
+					ss += (char)buffer_ReadBits(buffer, 8);
+				uint64_t senderPeerId;
+				buffer_ReadQWord(buffer, &senderPeerId, 0x20);
+				bool unk = buffer_ReadBits(buffer, 1);
+				sendLog(consoleWhiteOnBlack, "Event Protections", "%s: %s", sender->m_player_info->m_net_player_data.m_name, unk, ss);
+				free((void*)buffer);
+			} break;
+			}
+		}
+		else {
+			//Ensure buffer is freed, otherwise we create a memory leak.
+			if (buffer)
+				free((void*)buffer);
+		}
+	}
+	return ogReceivedNetMessage(netConnectionMgr, unk, frame);
+}
+
 void initHooks() {
 	lbls_addText("HUD_JOINING", "Isn't BigBaseC the fucking best?");
 	lbls_addText("HUD_TRANSP", "Isn't BigBaseC the fucking best?");
@@ -115,6 +208,8 @@ void initHooks() {
 		sendLog(consoleGrayOnBlack, "Hooks", "Created hook GLT");
 	if (MH_CreateHook((LPVOID)g_pointers.m_receivedEvent, (LPVOID)&receivedEventHk, (LPVOID)&ogReceivedEvent) == MH_OK)
 		sendLog(consoleGrayOnBlack, "Hooks", "Created hook RE");
+	if (MH_CreateHook((LPVOID)g_pointers.m_receivedNetMessage, (LPVOID)&receivedNetMessageHk, (LPVOID)&ogReceivedNetMessage) == MH_OK)
+		sendLog(consoleGrayOnBlack, "Hooks", "Created hook RNM");
 	MH_EnableHook(MH_ALL_HOOKS);
 	sendLog(consoleGrayOnBlack, "Hooks", "Enabled all hooks");
 }
