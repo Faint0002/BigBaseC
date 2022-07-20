@@ -3,8 +3,8 @@
  I'm still working out some kinks so please keep that in mind.
 
 # License:
-- This project is licensed under the GNU General Public License Version 3
-- Please visit https://www.gnu.org/licenses/gpl-3.0.en.html for all terms and conditions related to this project.
+- This project is licensed under the MIT License
+- Please visit https://opensource.org/licenses/MIT for all terms and conditions related to this project.
 
 # Issues
 - This is detected you shoud not use it in GTA Online.
